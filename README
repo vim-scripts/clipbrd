@@ -1,0 +1,30 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=1014
+
+Requires Vim 6.3
+
+See vimtip#805 for an easy way to use the plugin as an external editor for most applications on windows.
+
+This is a very simple utility that allows you to quickly view and edit contents (only those that are not read-only) of various registers that Vim supports. Most useful to quickly view and modify system clipboard using a shortcut (see Installation section). I often use this technique to even strip off the RTF to simple-text while copying from one application to other (that suppot RTF format, such as IE to Outlook).
+
+- Execute the default map (\cb or <Leader>cb) or :ClipBrd command to view
+  the default register ("*", the clipboard register). You can also specify
+  the register name as an argument to the :ClipBrd command.
+- The register name is remembered (until you change it again by explicitly
+  specifying it) so that you don't have to specify it everytime you run
+  :ClipBrd command.
+- The "[Clip Board]" buffer is like a regular Vim file buffer, as you can
+  write (:w, :w!, :wq, :wq!), reload (:e, :e!) and quit (:q, :q!) the
+  buffer using the built-in Vim commands. Writing without the bang will
+  make the plugin prompt you for confirmation and where available, you can
+  click "Cancel" to prevent the buffer from quitting.
+- To refresh contents from the register, use :e or :e! command, or just
+  close and reopen the buffer. To quit without saving, just use the :q!
+  command.
+- Even other buffer commands and settings work as expected, e.g., you can
+  :hide the buffer if you can't decide to save or quit, and the contents
+  should remain the same when you come back, unless a different register
+  is explicitly specified while opening the clipboard. Setting 'bufhidden'
+  to "hide" or 'hidden' also should do the same.
+
+
+Search_key_words: clipboard register genutils edit hari krishna dara
