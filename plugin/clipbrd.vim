@@ -1,14 +1,14 @@
 " clipbrd.vim -- Clipboard and other register content editor.
 " Author: Hari Krishna (hari_vim at yahoo dot com)
-" Last Change: 16-Jun-2004 @ 19:51
+" Last Change: 01-Jun-2006 @ 17:57
 " Created: 26-May-2004
-" Requires: Vim-6.3, genutils.vim(1.12)
-" Version: 1.0.5
+" Requires: Vim-7.0, genutils.vim(2.0)
+" Version: 2.0.1
 " Licence: This program is free software; you can redistribute it and/or
 "          modify it under the terms of the GNU General Public License.
 "          See http://www.gnu.org/copyleft/gpl.txt 
 " Download From:
-"     http://www.vim.org/script.php?script_id=
+"     http://www.vim.org/script.php?script_id=1014
 " Usage:
 "   - Execute the default map (\cb or <Leader>cb) or :ClipBrd command to view
 "     the default register ("*", the clipboard register). You can also specify
@@ -24,6 +24,7 @@
 "   - To refresh contents from the register, use :e or :e! command, or just
 "     close and reopen the buffer. To quit without saving, just use the :q!
 "     command.
+"   - <C-G> while in the [Clip Board] buffer shows the register name.
 "   - Even other buffer commands and settings work as expected, e.g., you can
 "     :hide the buffer if you can't decide to save or quit, and the contents
 "     should remain the same when you come back, unless a different register
@@ -54,15 +55,15 @@
 if exists('loaded_clipbrd')
   finish
 endif
-if v:version < 603
-  echomsg 'clipbrd: You need at least Vim 6.2'
+if v:version < 700
+  echomsg 'clipbrd: You need at least Vim 7.0'
   finish
 endif
 
 if !exists('loaded_genutils')
   runtime plugin/genutils.vim
 endif
-if !exists('loaded_genutils') || loaded_genutils < 112
+if !exists('loaded_genutils') || loaded_genutils < 200
   echomsg 'clipbrd: You need a newer version of genutils.vim plugin'
   finish
 endif
@@ -104,9 +105,9 @@ function! s:ViewRegister(...)
       set isfname-=\
       set isfname-=[
       if exists('+shellslash')
-        exec "sp \\\\". s:title
+        exec "sp \\\\". escape(s:title, ' ')
       else
-        exec "sp \\". s:title
+        exec "sp \\". escape(s:title, ' ')
       endif
       exec "normal i\<C-G>u\<Esc>"
       let s:myBufNum = bufnr('%')
@@ -141,7 +142,7 @@ function! s:ViewRegister(...)
   call s:SetupBuf(s:curReg)
 
   if forceRefresh || (line('$') == 1 && getline(1) =~ '^$')
-    call OptClearBuffer()
+    call genutils#OptClearBuffer()
     let v:errmsg = ''
     silent! exec '$put '.s:curReg
     if v:errmsg != ''
@@ -171,7 +172,7 @@ function! s:UpdateRegister(confirmed, cancellable)
 endfunction
 
 function! s:SetupBuf(regName)
-  call SetupScratchBuffer()
+  call genutils#SetupScratchBuffer()
   " We are not setting 'buftype' as this will make BufWriteCmd unusable.
   setlocal buftype=
   " We are not setting 'bufhidden' because that will allow us to :hide it,
@@ -190,12 +191,21 @@ function! s:SetupBuf(regName)
   setlocal textwidth=80
   let b:undo_ftplugin = 'setl ts< sts< sw< et< ai< fo< com< wm< tw<'
 
+  nnoremap <buffer> <silent> <C-G> :call <SID>ShowSummary()<CR>
+
   let auTitle = escape(s:title, '\[*^$. ')
   aug ClipBrd
     au!
     exec 'au BufWriteCmd ' . auTitle .' :call <SID>UpdateRegister(0, 1)'
     exec 'au BufReadCmd ' . auTitle .' :call <SID>ViewRegister()'
   aug END
+endfunction
+
+function! s:ShowSummary()
+  let summary = genutils#GetVimCmdOutput('file')
+  let summary = substitute(summary, '" \(\[New file]\)\=',
+        \ '" [Register '.s:curReg.']', '')
+  echo summary
 endfunction
 
 " vim6:fdm=marker et sw=2
